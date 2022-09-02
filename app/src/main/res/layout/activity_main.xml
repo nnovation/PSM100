@@ -17,25 +17,16 @@
         app:title="PSM100" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:menu="@menu/menu_main" />
 
-    <TextView
-        android:id="@+id/html"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Httml"
-        />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Button"
-        style="?attr/materialButtonOutlinedStyle"
-        >
-
-    </Button>
+    <FrameLayout
+        android:id="@+id/fragment_Layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <TextView
         android:layout_width="fill_parent"
@@ -46,15 +37,14 @@
         android:background="#808080"
         android:textAlignment="center"
         android:textColor="@color/white"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginLeft="5dp"
         />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp">
 
         <TableLayout
             android:id="@+id/table"

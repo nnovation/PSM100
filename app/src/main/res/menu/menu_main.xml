@@ -7,7 +7,7 @@
         android:orderInCategory="100"
         android:title="Voltage"
         android:icon="@drawable/ic_android_black_24dp"
-        app:showAsAction="never" />
+        app:showAsAction="never"/>
     <item
         android:id="@+id/PanelTemperature"
         android:orderInCategory="100"

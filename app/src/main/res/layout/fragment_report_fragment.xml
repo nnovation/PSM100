@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Report_fragment"
+    >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/lable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generate Report"
+        android:layout_gravity="center"
+        android:textSize="40dp"
+        android:textColor="@color/black"/>
+    <TextView
+        android:id="@+id/from"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="From:"
+        android:textSize="18dp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/To"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:text="To:"
+        android:textSize="18dp"
+        android:textColor="@color/black"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/G_PDF"
+        android:layout_gravity="center"
+        android:textSize="18dp"
+        android:layout_margin="10dp"
+        style="?attr/materialButtonOutlinedStyle"
+        android:text="Genrate PDF"
+        />
+</LinearLayout>
+
+</FrameLayout>
