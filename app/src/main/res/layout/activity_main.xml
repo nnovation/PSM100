@@ -11,10 +11,10 @@
         android:id="@+id/toolbar"
         android:layout_width="704dp"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@color/light_green"
         android:minHeight="?attr/actionBarSize"
-        android:theme="?actionBarPopupTheme"
-        app:title="PSM100" />
+        app:title="PSM100"
+        app:titleTextColor="@color/white"/>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"

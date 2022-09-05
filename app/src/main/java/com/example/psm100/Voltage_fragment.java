@@ -1,21 +1,36 @@
 package com.example.psm100;
 
+
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.DrawableWrapper;
+import android.graphics.drawable.GradientDrawable;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -41,7 +56,18 @@ public class Voltage_fragment extends Fragment {
     private String mParam2;
     String color[] ={"#FF0000","#FBB917","#357EC7"};
     String phase[] ={"R","Y","B"};
-    String RYB[]  = {"0.00","0.00","0.00"};
+    String PanelName[] ={"Panel_1","Panel_2","Panel_3","Panel_4","Panel_5","Panel_6","Panel_7"};
+    String border[] = {"r_border","y_border","b_border"};
+    String RYB_voltage[][]  = {
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"},
+            {"0.00","0.00","0.00"}
+    };
+    String URL[]  = {"http://192.168.43.252/","http://192.168.43.99/","http://192.168.43.55/","http://192.168.43.154/","http://192.168.43.53/","http://192.168.43.159/","http://192.168.43.37/"};
 
     public Voltage_fragment() {
         // Required empty public constructor
@@ -80,41 +106,84 @@ public class Voltage_fragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_voltage_fragment, container, false);
     }
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        Table(RYB,getView());
-        OkHttpClient client = new OkHttpClient();
-        String url = "http://192.168.43.215/voltage";
+        Table(RYB_voltage, getView());
+        for (int row_next=0; row_next <7; row_next++) {
+                try {
+//                Cell_Text[count] =httpRequest(URL[count]);
+                    V_HttpGetRequest getRequest = new V_HttpGetRequest();
+                    //Perform the doInBackground method, passing in our url
+                    String result = getRequest.execute(URL[row_next]).get();
+                    RYB_voltage[row_next] = result.split(",");
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    for (int na = 0; na <= 3; na++){
+                        RYB_voltage[row_next][na] ="NA";
+                }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+        }
+        cell_data(RYB_voltage,view);
 
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+    }
+    public void cell_data(String Cell_Data[][],View rootView){
+        for (int i = 0; i < 7; i++) {
+            for (int d = 0; d < 3; d++) {
+                TextView Data_R = new TextView(rootView.getContext());
+                TableLayout stk = (TableLayout) rootView.findViewById(R.id.table);
+                TableRow row= (TableRow) stk.getChildAt(((i+1)*3)-1);
+                TextView cell = (TextView) row.getChildAt(d);
+                cell.setText(Cell_Data[i][d]);
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
+//                Data_R.findViewById(Integer.parseInt("cell_"+i+"_"+d));
+//                Data_R.setText(Cell_Data[d]);
+            }
+        }
+
+    }
+    private static OkHttpClient createHttpclient() {
+        final OkHttpClient.Builder builder =  new OkHttpClient.Builder()
+                .connectTimeout(100, TimeUnit.MILLISECONDS)
+                .writeTimeout(100, TimeUnit.MILLISECONDS)
+                .readTimeout(100, TimeUnit.MILLISECONDS);
+//        setSocketFactory(builder); // To handle SSL certificate.
+        return builder.build();
+    }
+    public static class V_HttpGetRequest extends AsyncTask<String, Void, String> {
+        //        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = createHttpclient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            String Response_body = "NA,NA,NA";
+
+//            Response response;
+            String url = params[0];
+            Request V_request = new Request.Builder()
+                    .url(url)
+                    .build();
+            try (Response response = client.newCall(V_request).execute()) {
+                if (response.isSuccessful()) {
+                    Response_body = response.body().string();
+                    response.close();
+                } else {
+                    Response_body = "NA,NA,NA";
+                    response.close();
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    final String PanelVoltage = response.body().string();
-                    RYB = PanelVoltage.split(",");
-        //
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-//                            Table(RYB,getView());
-                        }
-                    });
-                }
-            }
-        });
-
+            return Response_body;
+        }
     }
 
-    public void Table(String PanelVoltage[], View rootView) {
+    @SuppressLint("ResourceType")
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    public void Table(String PanelVoltage[][], View rootView) {
 
         TableLayout stk = (TableLayout) rootView.findViewById(R.id.table);
         TableRow.LayoutParams row_with = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, 100);
@@ -130,55 +199,74 @@ public class Voltage_fragment extends Fragment {
 
             TextView panel_name = new TextView(rootView.getContext());
             panel_name.setLayoutParams(panel_name_with);
-            panel_name.setText("Panel " + (i + 1));
+            panel_name.setText(PanelName[i]);
             panel_name.setTextSize(20);
-            panel_name.setBackgroundColor(Color.parseColor("#C0C0C0"));
+            panel_name.setBackgroundColor(Color.parseColor("#E0DBD7"));
             panel_name.setTextColor(Color.BLACK);
             panel_name.setGravity(Gravity.CENTER);
             panel_row.addView(panel_name);
 
 
             TableRow RYB_Row = new TableRow(rootView.getContext());
-            //           RYB_Row.setBackground(this.getDrawable(R.drawable.border));
 
             for (int RYB = 0; RYB < 3; RYB++) {
                 TextView R_text = new TextView(rootView.getContext());
 
                 R_text.setLayoutParams(row_with);
                 //         R1.setBackground(this.getDrawable(R.drawable.border));
-                R_text.setBackgroundColor(Color.parseColor(color[RYB]));
+      //          R_text.setBackgroundColor(Color.parseColor(color[RYB]));
                 R_text.setText(phase[RYB]);
                 R_text.setTextColor(Color.WHITE);
                 R_text.setTextSize(20);
                 R_text.setGravity(Gravity.CENTER);
-                RYB_Row.addView(R_text);
+                switch (RYB){
+                    case 0:
+                    R_text.setBackground(getContext().getDrawable(R.drawable.r_border));
+                    break;
+                    case 1:
+                    R_text.setBackground(getContext().getDrawable(R.drawable.y_border));
+                    break;
+                    case 2:
+                    R_text.setBackground(getContext().getDrawable(R.drawable.b_border));
+                    break;
+                }
+                    RYB_Row.addView(R_text);
             }
 
             TableRow Data_Row = new TableRow(rootView.getContext());
 
             for (int d = 0; d < 3; d++) {
                 TextView Data_R = new TextView(rootView.getContext());
+
                 Data_R.setLayoutParams(row_with);
-                //        Data_R.setBackground(this.getDrawable(R.drawable.border));
                 Data_R.setBackgroundColor(Color.WHITE);
-                Data_R.setText(PanelVoltage[d]);
+                Data_R.setText(PanelVoltage[i][d]);
                 Data_R.setTextColor(Color.BLACK);
                 Data_R.setTextSize(18);
                 Data_R.setGravity(Gravity.CENTER);
+                Data_R.setBackground(getContext().getDrawable(R.drawable.border));
                 Data_Row.addView(Data_R);
             }
             Button save = new Button(rootView.getContext());
-            //         save.setBackground(this.getDrawable(R.drawable.border));
             save.setText("Save");
-            //          save.setTextAppearance(com.google.android.material.R.style.Widget_Material3_Button_OutlinedButton);
             //         save.setBackgroundColor(Color.parseColor("#0A837A"));
             save.setTextSize(18);
             save.setGravity(Gravity.CENTER);
+            save.setId(i);
+
             save.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    SimpleDateFormat Date = new SimpleDateFormat("dd-MM-yy HH:mm");
+                    String currentDate = Date.format(new Date());
                     dbHandler = new DBHandler(rootView.getContext());
-                    dbHandler.addNewCourse(RYB[0], RYB[1], RYB[2], RYB[2]);
+                    int save_id = save.getId();
+                    String R=PanelVoltage[save_id][0];
+                    String Y=PanelVoltage[save_id][1];
+                    String B=PanelVoltage[save_id][2];
+                    String P_Name = PanelName[save_id];
+//                    String P_Name = "Panel " +(save_id+1);
+                    dbHandler.addNewCourse(R,Y,B,currentDate,P_Name);
                 }
             });
             Data_Row.addView(save);
@@ -196,4 +284,5 @@ public class Voltage_fragment extends Fragment {
 
 
     }
+
 }

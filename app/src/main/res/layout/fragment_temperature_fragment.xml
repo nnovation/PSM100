@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:textSize="25dp"
         android:text="PANEL TEMPERATURE"
-        android:background="#808080"
+        android:background="@color/light_green"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:layout_marginRight="5dp"

@@ -1,15 +1,23 @@
 package com.example.psm100;
 
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-import android.content.pm.PackageManager;
+import static android.icu.lang.UCharacter.IndicPositionalCategory.NA;
+
+import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Paint;
+import android.graphics.pdf.PdfDocument;
+import android.os.Environment;
+import android.view.View;
 
-import androidx.core.app.ActivityCompat;
+import org.w3c.dom.Document;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class DBHandler extends SQLiteOpenHelper {
 
@@ -18,10 +26,10 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final String DB_NAME = "PSM100";
 
     // below int is our database version
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 3;
 
     // below variable is for our table name.
-    private static final String TABLE_NAME = "Panel_1";
+    private static final String TABLE_NAME[] = {"Panel_1","Panel_2","Panel_3","Panel_4","Panel_5","Panel_6","Panel_7"};
 
     // below variable is for our id column.
     private static final String ID_COL = "id";
@@ -46,28 +54,22 @@ public class DBHandler extends SQLiteOpenHelper {
     // below method is for creating a database by running a sqlite query
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // on below line we are creating
-        // an sqlite query and we are
-        // setting our column names
-        // along with their data types.
-        String query = "CREATE TABLE " + TABLE_NAME + " ("
-                + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + R_Phase + " TEXT,"
-                + B_Phase + " TEXT,"
-                + Y_Phase + " TEXT,"
-                + Date + " TEXT)";
-
-        // at last we are calling a exec sql
-        // method to execute above sql query
-        db.execSQL(query);
+        for (int T = 0; T < 7; T++) {
+             String  CREATE_Panel = "CREATE TABLE " + TABLE_NAME[T] + " ("
+                    + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + R_Phase + " TEXT,"
+                    + B_Phase + " TEXT,"
+                    + Y_Phase + " TEXT,"
+                    + Date + " TEXT)";
+            db.execSQL(CREATE_Panel);
+        }
     }
 
-    // this method is use to add new course to our sqlite database.
-    public void addNewCourse(String R_Voltage, String Y_Voltage, String B_Voltage, String Date_Time) {
 
-        // on below line we are creating a variable for
-        // our sqlite database and calling writable method
-        // as we are writing data in our database.
+    // this method is use to add new course to our sqlite database.
+    public void addNewCourse(String R_Voltage, String Y_Voltage, String B_Voltage, String Date_Time, String TABLE_NAME) {
+
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         // on below line we are creating a
@@ -89,11 +91,42 @@ public class DBHandler extends SQLiteOpenHelper {
         // database after adding database.
         db.close();
     }
+    public String CreatePDF(View view){
+        String query = "select * from Panel_1";
+        SQLiteDatabase D_pdf = this.getWritableDatabase();
+        Cursor cursor = D_pdf.rawQuery(query,null);
+        try {
+            cursor.moveToFirst();
+      //      textViewDisplay.setText(cursor.getString(0));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+       //     textViewDisplay.setText("");
+        }
+
+        PdfDocument pdfDocument = new PdfDocument();
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 600,1).create();
+        PdfDocument.Page page = pdfDocument.startPage(pageInfo);
+//        page.getCanvas().drawText(cursor.getString(1),10, 25, new Paint());
+        page.getCanvas().drawText(cursor.getString(1),10, 25, new Paint());
+        pdfDocument.finishPage(page);
+        String filePath = Environment.getExternalStorageDirectory().getPath()+"/Fonts/"+"report.pdf";
+        File file = new File(filePath);
+        try {
+            pdfDocument.writeTo(new FileOutputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pdfDocument.close();
+        return cursor.getString(0);
+    }
+
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // this method is called to check if the table exists already.
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        for (int T_db=0; T_db <7; T_db++) {
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME[T_db]);
+        }
         onCreate(db);
     }
 

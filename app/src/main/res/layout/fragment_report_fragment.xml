@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Report_fragment"
-    >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Report_fragment">
 <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,6 +25,29 @@
         android:text="From:"
         android:textSize="18dp"
         android:textColor="@color/black"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="5dp"
+        app:cardCornerRadius="10dp"
+        android:layout_margin="0dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="0dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/F_Date"
+        android:text="from Date Time"
+        android:textSize="18dp"
+        android:textColor="@color/black"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"/>
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/To"
@@ -34,6 +57,27 @@
         android:text="To:"
         android:textSize="18dp"
         android:textColor="@color/black"/>
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardElevation="5dp"
+        app:cardCornerRadius="10dp"
+        android:layout_margin="0dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardMaxElevation="0dp"
+        app:cardPreventCornerOverlap="true"
+        app:cardUseCompatPadding="true"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/T_Date"
+            android:text="To Date Time"
+            android:textSize="18dp"
+            android:textColor="@color/black"
+            android:layout_gravity="center"
+            android:layout_margin="10dp" />
+    </androidx.cardview.widget.CardView>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -42,7 +86,7 @@
         android:textSize="18dp"
         android:layout_margin="10dp"
         style="?attr/materialButtonOutlinedStyle"
-        android:text="Genrate PDF"
+        android:text="Generate PDF"
         />
 </LinearLayout>
 

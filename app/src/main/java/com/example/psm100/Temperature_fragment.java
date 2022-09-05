@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,13 +17,14 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
+import java.util.concurrent.TimeUnit;
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link Temperature_fragment#newInstance} factory method to
@@ -63,8 +65,18 @@ public class Temperature_fragment extends Fragment {
             {"0.00","0.00","0.00","0.00"},
             {"0.00","0.00","0.00","0.00"},
     };
-
-
+    String URL[][] = {{"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},}
+    ;
+    String ResponseData;
     public Temperature_fragment() {
         // Required empty public constructor
     }
@@ -99,48 +111,98 @@ public class Temperature_fragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_temperature_fragment, container, false);
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-       // Table(Temperature,getView());
-        httpRequest();
-    }
+        Table(Temperature,getView());
+        //for(int url= 0; url<=4; )
+        for (int row_next=0; row_next <10; row_next++) {
+            for (int cell_next = 0; cell_next < 4; cell_next++) {
+                try {
+//                Cell_Text[count] =httpRequest(URL[count]);
+                    HttpGetRequest getRequest = new HttpGetRequest();
+                    //Perform the doInBackground method, passing in our url
+                    String result = getRequest.execute(URL[row_next][cell_next]).get();
+                    Temperature[row_next][cell_next] = result;
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    Temperature[row_next][cell_next] = "NA";
 
-public void httpRequest(){
-
-    OkHttpClient client = new OkHttpClient();
-    String url = "http://192.168.43.25/";
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-        @Override
-        public void onFailure(Call call, IOException e) {
-            e.printStackTrace();
-        }
-
-        @Override
-        public void onResponse(Call call, Response response) throws IOException {
-            if (response.isSuccessful()) {
-                final String PanelVoltage = response.body().string();
-                Temperature[0][0] =PanelVoltage;
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run(){
-                        Table(Temperature,getView());
-                    }
-
-                });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
-    });
+        cell_data(Temperature,view);
+    }
+    private static OkHttpClient createHttpclient() {
+        final OkHttpClient.Builder builder =  new OkHttpClient.Builder()
+                .connectTimeout(100, TimeUnit.MILLISECONDS)
+                .writeTimeout(100, TimeUnit.MILLISECONDS)
+                .readTimeout(100, TimeUnit.MILLISECONDS);
+//        setSocketFactory(builder); // To handle SSL certificate.
+        return builder.build();
+    }
+    public static class HttpGetRequest extends AsyncTask<String, Void, String> {
+//        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = createHttpclient();
+        @Override
+        protected String doInBackground(String... params) {
+            String Response_body = "NA";
+
+//            Response response;
+            String url = params[0];
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+            try (Response response = client.newCall(request).execute()) {
+                if(response.isSuccessful()){
+                    Response_body = response.body().string();
+                    response.close();
+                }
+                else {
+                    Response_body="NA";
+                    response.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+         return Response_body;
         }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+            super.onPostExecute(result);
+            }
+    }
+    public void cell_data(String Cell_Data[][],View rootView){
+        for (int i = 0; i < 10; i++) {
+            for (int d = 0; d < 4; d++) {
+                TextView Data_R = new TextView(rootView.getContext());
+                TableLayout stk = (TableLayout) rootView.findViewById(R.id.table);
+                TableRow row= (TableRow) stk.getChildAt((i+1)+i);
+                TextView cell = (TextView) row.getChildAt(d);
+                if (Cell_Data[i][d] != "NA") {
+                    cell.setText((Cell_Data[i][d]) + "°C");
+                }else {
+                    cell.setText((Cell_Data[i][d]));
+                }
+//                Data_R.findViewById(Integer.parseInt("cell_"+i+"_"+d));
+//                Data_R.setText(Cell_Data[d]);
+        }
+        }
+
+    }
     public void Table(String PanelTemperature[][], View rootView) {
 
         TableLayout stk = (TableLayout) rootView.findViewById(R.id.table);
@@ -171,6 +233,7 @@ public void httpRequest(){
 
             for (int d = 0; d < 4; d++) {
                 TextView Data_R = new TextView(rootView.getContext());
+//                Data_R.setId(Integer.parseInt("Cell_"+i+"_"+d));
                 Data_R.setLayoutParams(row_with);
                 //        Data_R.setBackground(this.getDrawable(R.drawable.border));
                 Data_R.setBackgroundColor(Color.WHITE);
@@ -189,8 +252,6 @@ public void httpRequest(){
             stk.addView(Data_Row);
 //            stk.setBackground(this.getDrawable(R.drawable.border));
             stk.setPadding(15, 0, 15, 20);
-
-
         }
 
 
