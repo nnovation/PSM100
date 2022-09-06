@@ -2,9 +2,9 @@ package com.example.psm100;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.database.Cursor;
 import android.os.Bundle;
 
-import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -82,7 +82,6 @@ public class Report_fragment<PERMISSION_REQUEST_CODE> extends Fragment implement
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_report_fragment, container, false);
     }
-
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         int permission1 = ContextCompat.checkSelfPermission(getContext(), WRITE_EXTERNAL_STORAGE);
@@ -95,8 +94,9 @@ public class Report_fragment<PERMISSION_REQUEST_CODE> extends Fragment implement
             @Override
             public void onClick(View v) {
                 dbHandler = new DBHandler(view.getContext());
-                String curser = dbHandler.CreatePDF(view);
-                Log.d("Table_Data", curser);
+                dbHandler.generatePDF(view);
+//                Cursor curser = dbHandler.CreatePDF(view);
+//               Log.d("Table_Data", curser.getString(1));
 
             }
         });
