@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,11 +19,15 @@ import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+import com.itextpdf.kernel.pdf.PdfWriter;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -94,12 +99,23 @@ public class Report_fragment<PERMISSION_REQUEST_CODE> extends Fragment implement
             @Override
             public void onClick(View v) {
                 dbHandler = new DBHandler(view.getContext());
-                dbHandler.generatePDF(view);
+                try {
+                    dbHandler.generatePDF(view);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                AddingTable addingTable=new AddingTable();
+                try {
+                    addingTable.CreateTable();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
 //                Cursor curser = dbHandler.CreatePDF(view);
 //               Log.d("Table_Data", curser.getString(1));
 
-            }
+                }
         });
+
 
         Date_Time_from =view.findViewById(R.id.F_Date);
         Date_Time_to = view.findViewById(R.id.T_Date);
@@ -131,7 +147,9 @@ public class Report_fragment<PERMISSION_REQUEST_CODE> extends Fragment implement
                 showDateTimeDialog(Date_Time_to);
             }
         });
+
     }
+
 
 
     private void showDateTimeDialog(final TextView Date_Time_f) {

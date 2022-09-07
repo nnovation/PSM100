@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (checkPermission()) {
-            Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+       //     Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
         } else {
             requestPermission();
         }
@@ -99,74 +99,5 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-//        try {
-//            sqlLiteDBHandler = new DBHandler(this,”PDFDatabase”, null,1);
-//            SQLiteDatabase sqLiteDatabase = sqlLiteDBHandler.getWritableDatabase();
-//            sqLiteDatabase.execSQL(“CREATE TABLE PDFTable(SerialNumber TEXT, Text TEXT)”);
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//        }
-//    }
-//    public void CreatePDF(View view){
-//        String query = “Select Text from PDFTable where SerialNumber=” + editTextSerialNumberFetch.getText().toString();
-//        Cursor cursor = sqLiteDatabase.rawQuery(query,null);
-//        try {
-//            cursor.moveToFirst();
-//            textViewDisplay.setText(cursor.getString(0));
-//        }
-//        catch (Exception e){
-//            e.printStackTrace();
-//            textViewDisplay.setText(“”);
-//            return;
-//        }
-//
-//        PdfDocument pdfDocument = new PdfDocument();
-//        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 600,1).create();
-//        PdfDocument.Page page = pdfDocument.startPage(pageInfo);
-//        page.getCanvas().drawText(cursor.getString(0),10, 25, new Paint());
-//        pdfDocument.finishPage(page);
-//        String filePath = Environment.getExternalStorageDirectory().getPath()+”/Download/”+editTextSerialNumberFetch.getText().toString()+”.pdf”;
-//        File file = new File(filePath);
-//        try {
-//            pdfDocument.writeTo(new FileOutputStream(file));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        pdfDocument.close();
-//    }
-//}
-//    }
- /*       OkHttpClient client = new OkHttpClient();
-        String url = "http://192.168.43.215/voltage";
-
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    final String PanelVoltage = response.body().string();
-                    RYB = PanelVoltage.split(",");
-                    Table(RYB);
-                    MainActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-                        }
-                    });
-                }
-            }
-        });
-
-    }
-*/
     }
 }
