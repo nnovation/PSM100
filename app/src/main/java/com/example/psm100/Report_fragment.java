@@ -100,13 +100,7 @@ public class Report_fragment<PERMISSION_REQUEST_CODE> extends Fragment implement
             public void onClick(View v) {
                 dbHandler = new DBHandler(view.getContext());
                 try {
-                    dbHandler.generatePDF(view);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                AddingTable addingTable=new AddingTable();
-                try {
-                    addingTable.CreateTable();
+                    dbHandler.generatePDF(view,Date_Time_from.getText().toString(),Date_Time_to.getText().toString());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -74,8 +75,9 @@ public class Temperature_fragment extends Fragment {
             {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
             {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
             {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},
-            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},}
+            {"http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/","http://192.168.43.25/"},};
     ;
+    String url_string="http://192.168.43.25/\",\"http://192.168.43.25/\",\"http://192.168.43.25/\",\"http://192.168.43.25/\"";
     String ResponseData;
     public Temperature_fragment() {
         // Required empty public constructor
@@ -119,25 +121,7 @@ public class Temperature_fragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         Table(Temperature,getView());
-        //for(int url= 0; url<=4; )
-        for (int row_next=0; row_next <10; row_next++) {
-            for (int cell_next = 0; cell_next < 4; cell_next++) {
-                try {
-//                Cell_Text[count] =httpRequest(URL[count]);
-                    HttpGetRequest getRequest = new HttpGetRequest();
-                    //Perform the doInBackground method, passing in our url
-                    String result = getRequest.execute(URL[row_next][cell_next]).get();
-                    Temperature[row_next][cell_next] = result;
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                    Temperature[row_next][cell_next] = "NA";
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        cell_data(Temperature,view);
+        HttpGetRequest httpGetRequest = (HttpGetRequest) new HttpGetRequest(view,Temperature,URL).execute();
     }
     private static OkHttpClient createHttpclient() {
         final OkHttpClient.Builder builder =  new OkHttpClient.Builder()
@@ -148,53 +132,83 @@ public class Temperature_fragment extends Fragment {
         return builder.build();
     }
     public static class HttpGetRequest extends AsyncTask<String, Void, String> {
-//        OkHttpClient client = new OkHttpClient();
+
+        private View view;
+        private String Temperature[][];
+        private String Response_body[][];
+        private String URL[][];
+        public HttpGetRequest(View view,String Temperature[][], String URL[][]){
+            this.view=view;
+            this.Temperature=Temperature;
+            this.URL=URL;
+        }
+        //        OkHttpClient client = new OkHttpClient();
         OkHttpClient client = createHttpclient();
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            cell_data(Temperature,view);
+        }
+
         @Override
         protected String doInBackground(String... params) {
-            String Response_body = "NA";
-
+//            String Response_body[][] = null;
+            for (int row_next = 0; row_next < 10; row_next++) {
+                for (int cell_next = 0; cell_next < 4; cell_next++) {
 //            Response response;
-            String url = params[0];
-            Request request = new Request.Builder()
-                    .url(url)
-                    .build();
-            try (Response response = client.newCall(request).execute()) {
-                if(response.isSuccessful()){
-                    Response_body = response.body().string();
-                    response.close();
+//                    String url = params[row_next];
+                    String url = URL[row_next][cell_next];
+                    Request request = new Request.Builder()
+                            .url(url)
+                            .build();
+                    try (Response response = client.newCall(request).execute()) {
+                        if (response.isSuccessful()) {
+                            Temperature[row_next][cell_next] = response.body().string();
+                            response.close();
+                        } else {
+                            Temperature[row_next][cell_next] = "NA";
+                            response.close();
+                        }
+                    } catch (IOException e) {
+                        Temperature[row_next][cell_next] = "NA";
+//                        response.close();
+                        e.printStackTrace();
+                    }
                 }
-                else {
-                    Response_body="NA";
-                    response.close();
+            }
+            return "Response_body";
+        }
+//
+//                @Override
+//                protected void onProgressUpdate(Void... values) {
+//                    super.onProgressUpdate(values);
+//                }
+
+                @Override
+                protected void onPostExecute(String result){
+                    super.onPostExecute(result);
+                    cell_data(Temperature,view);
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            handler.postDelayed(this, 5000);
+                        }
+                    }, 3000);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-
-         return Response_body;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(String result){
-            super.onPostExecute(result);
-            }
-    }
-    public void cell_data(String Cell_Data[][],View rootView){
+    public static void cell_data(String Cell_Data[][],View rootView){
         for (int i = 0; i < 10; i++) {
             for (int d = 0; d < 4; d++) {
                 TextView Data_R = new TextView(rootView.getContext());
                 TableLayout stk = (TableLayout) rootView.findViewById(R.id.table);
-                TableRow row= (TableRow) stk.getChildAt((i+1)+i);
+            TableRow row= (TableRow) stk.getChildAt((i+1)+i);
                 TextView cell = (TextView) row.getChildAt(d);
                 if (Cell_Data[i][d] != "NA") {
                     cell.setText((Cell_Data[i][d]) + "°C");
-                }else {
+                }else if (Float.valueOf(Cell_Data[i][d] >= 40)){
+                    cell.setBackgroundColor(Color.parseColor("#FFA500"));
                     cell.setText((Cell_Data[i][d]));
                 }
 //                Data_R.findViewById(Integer.parseInt("cell_"+i+"_"+d));

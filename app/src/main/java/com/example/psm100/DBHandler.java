@@ -9,9 +9,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Environment;
+import android.renderscript.Sampler;
 import android.util.Log;
 import android.view.View;
 
@@ -21,6 +23,8 @@ import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.text.*;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
@@ -29,6 +33,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class DBHandler extends SQLiteOpenHelper {
@@ -105,76 +112,52 @@ public class DBHandler extends SQLiteOpenHelper {
     }
     private static final int PERMISSION_REQUEST_CODE = 200;
 
-    public void generatePDF(View view) throws FileNotFoundException {
-        String query = "select * from Panel_1";
-        SQLiteDatabase D_pdf = this.getWritableDatabase();
-        Cursor cursor = D_pdf.rawQuery(query,null);
-        try {
-            cursor.moveToFirst();
-
-                //      textViewDisplay.setText(cursor.getString(0));
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            //     textViewDisplay.setText("");
-        }
-                File file = new File(Environment.getExternalStorageDirectory(), "GlowGarden/report.pdf");
+    public void generatePDF(View view,String From,String To) throws FileNotFoundException {
+        SimpleDateFormat Date = new SimpleDateFormat("dd-MM-yy HH:mm");
+        String currentDate = Date.format(new Date());
+        File file = new File(Environment.getExternalStorageDirectory(), "GlowGarden/" + "Report-" +currentDate.toString()+ ".pdf");
         PdfWriter writer = new PdfWriter(file);
-
-        // Creating a PdfDocument object
         com.itextpdf.kernel.pdf.PdfDocument pdf = new PdfDocument(writer);
-
-        // Creating a Document object
         Document doc = new Document(pdf);
 
-        // Creating a table
-        float [] pointColumnWidths = {70F, 70F, 70F, 70F,70F};
-        Table table = new Table(pointColumnWidths);
+        for (int P_T=0;P_T <7;P_T++) {
+            String query = "select * from "+TABLE_NAME[P_T]+" where date >\"" + From + "\" and date < \"" + To + "\"";
+            // String query = "select * from Panel_1 ";
+            SQLiteDatabase D_pdf = this.getWritableDatabase();
+            Cursor cursor = D_pdf.rawQuery(query, null);
+            try {
+                cursor.moveToFirst();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        // Adding cells to the table
-        table.addCell(new Cell().add(new Paragraph("Date")).setBold());
-        table.addCell(new Cell().add(new Paragraph("Time")).setBold());
-        table.addCell(new Cell().add(new Paragraph("R_Phase")).setBold().setBackgroundColor(new DeviceRgb(255, 0, 0)) );
-        table.addCell(new Cell().add(new Paragraph("B_Phase")).setBold().setBackgroundColor(new DeviceRgb(0, 255, 0)));
-        table.addCell(new Cell().add(new Paragraph("Y_phase")).setBold().setBackgroundColor(new DeviceRgb(0, 0, 255)));
+            float[] pointColumnWidths = {50F, 70F, 70F, 70F, 150F};
+            Table table = new Table(pointColumnWidths);
 
-        // Adding Table to document
-        doc.add(table);
+            table.addCell(new Cell(1, 5).add(new Paragraph(TABLE_NAME[P_T])).setTextAlignment(TextAlignment.CENTER).setBold());
+            table.addCell(new Cell().add(new Paragraph("ID")).setBold());
+            table.addCell(new Cell().add(new Paragraph("R_Phase")).setBold().setBackgroundColor(new DeviceRgb(245, 100, 100)));
+            table.addCell(new Cell().add(new Paragraph("Y_phase")).setBold().setBackgroundColor(new DeviceRgb(100, 245, 100)));
+            table.addCell(new Cell().add(new Paragraph("B_Phase")).setBold().setBackgroundColor(new DeviceRgb(100, 100, 245)));
+            table.addCell(new Cell().add(new Paragraph("Date_Time")).setBold());
 
-        // Closing the document
+            table.setMarginTop(10);
+
+            if (cursor.moveToFirst()) {
+                Log.d("TAG", "generatePDF: " + cursor.moveToFirst());
+                do {
+                    for (int i = 0; i < cursor.getColumnCount(); i++) {
+                        String value = (cursor.getString(i));
+                        table.addCell(new Cell().add(new Paragraph(value))).setTextAlignment(TextAlignment.CENTER);
+                    }
+                } while (cursor.moveToNext());
+            }
+            doc.add(table);
+
+        }
         doc.close();
-        System.out.println("Table created successfully..");
-    }
-//        PdfDocument pdfDocument = new PdfDocument();
-//        Paint paint = new Paint();
-//        Paint title = new Paint();
-//        PdfDocument.PageInfo mypageInfo = new PdfDocument.PageInfo.Builder(792 , 1120, 1).create();
-//
-//        // below line is used for setting
-//        // start page for our PDF file.
-//        PdfDocument.Page myPage = pdfDocument.startPage(mypageInfo);
-//
-//        // creating a variable for canvas
-//        // from our page of PDF.
-//        Canvas canvas = myPage.getCanvas();
-//        title.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
-//        title.setTextSize(15);
-//        title.setColor(ContextCompat.getColor(view.getContext(), R.color.purple_200));
-//        canvas.drawText(cursor.getString(1), 209, 100, title);
-//        title.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
-//        title.setColor(ContextCompat.getColor(view.getContext(), R.color.purple_200));
-//        title.setTextSize(15);
-//        title.setTextAlign(Paint.Align.CENTER);
-//        pdfDocument.finishPage(myPage);
-//        File file = new File(Environment.getExternalStorageDirectory(), "GlowGarden/report.pdf");
-//
-//        try {
-//            pdfDocument.writeTo(new FileOutputStream(file));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        pdfDocument.close();
 
+    }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

@@ -14,6 +14,7 @@ import android.os.Bundle;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -110,25 +111,89 @@ public class Voltage_fragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         Table(RYB_voltage, getView());
-        for (int row_next=0; row_next <7; row_next++) {
-                try {
-//                Cell_Text[count] =httpRequest(URL[count]);
-                    V_HttpGetRequest getRequest = new V_HttpGetRequest();
-                    //Perform the doInBackground method, passing in our url
-                    String result = getRequest.execute(URL[row_next]).get();
-                    RYB_voltage[row_next] = result.split(",");
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                    for (int na = 0; na <= 3; na++){
-                        RYB_voltage[row_next][na] ="NA";
-                }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-        }
-        cell_data(RYB_voltage,view);
+        V_HttpGetRequest httpGetRequest = (V_HttpGetRequest) new V_HttpGetRequest(view,RYB_voltage,URL).execute();
 
+//        for (int row_next=0; row_next <7; row_next++) {
+//                try {
+////                Cell_Text[count] =httpRequest(URL[count]);
+//                    V_HttpGetRequest getRequest = new V_HttpGetRequest();
+//                    //Perform the doInBackground method, passing in our url
+//                    String result = getRequest.execute(URL[row_next]).get();
+//                    RYB_voltage[row_next] = result.split(",");
+//                } catch (ExecutionException e) {
+//                    e.printStackTrace();
+//                    for (int na = 0; na <= 3; na++){
+//                        RYB_voltage[row_next][na] ="NA";
+//                }
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//        }
     }
+    private static OkHttpClient createHttpclient() {
+        final OkHttpClient.Builder builder =  new OkHttpClient.Builder()
+                .connectTimeout(100, TimeUnit.MILLISECONDS)
+                .writeTimeout(100, TimeUnit.MILLISECONDS)
+                .readTimeout(100, TimeUnit.MILLISECONDS);
+//        setSocketFactory(builder); // To handle SSL certificate.
+        return builder.build();
+    }
+    public class V_HttpGetRequest extends AsyncTask<String, Void, String> {
+        private View view;
+        private String RYB_voltage[][];
+        private String Response_body[][];
+        private String URL[];
+        public V_HttpGetRequest(View view,String RYB_voltage[][], String URL[]){
+            this.view=view;
+            this.RYB_voltage=RYB_voltage;
+            this.URL=URL;
+        }
+        //        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = createHttpclient();
+
+        @Override
+        protected String doInBackground(String... params) {
+            String Response_body = "NA,NA,NA";
+        for (int row_next=0; row_next <7; row_next++) {
+
+//            Response response;
+            String url = URL[row_next];
+            Request V_request = new Request.Builder()
+                    .url(url)
+                    .build();
+            try (Response response = client.newCall(V_request).execute()) {
+                if (response.isSuccessful()) {
+                    Response_body = response.body().string();
+                    RYB_voltage[row_next] = Response_body.split(",");
+                    response.close();
+                } else {
+                    Response_body = "NA,NA,NA";
+                    RYB_voltage[row_next] = Response_body.split(",");
+                    response.close();
+                }
+            } catch (IOException e) {
+                Response_body = "NA,NA,NA";
+                RYB_voltage[row_next] = Response_body.split(",");
+                e.printStackTrace();
+            }
+        }
+            return "Response_body";
+        }
+
+        @Override
+        protected void onPostExecute(String result){
+            super.onPostExecute(result);
+            cell_data(RYB_voltage,view);
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    handler.postDelayed(this, 5000);
+                }
+            }, 3000);
+        }
+    }
+
     public void cell_data(String Cell_Data[][],View rootView){
         for (int i = 0; i < 7; i++) {
             for (int d = 0; d < 3; d++) {
@@ -144,43 +209,6 @@ public class Voltage_fragment extends Fragment {
         }
 
     }
-    private static OkHttpClient createHttpclient() {
-        final OkHttpClient.Builder builder =  new OkHttpClient.Builder()
-                .connectTimeout(100, TimeUnit.MILLISECONDS)
-                .writeTimeout(100, TimeUnit.MILLISECONDS)
-                .readTimeout(100, TimeUnit.MILLISECONDS);
-//        setSocketFactory(builder); // To handle SSL certificate.
-        return builder.build();
-    }
-    public static class V_HttpGetRequest extends AsyncTask<String, Void, String> {
-        //        OkHttpClient client = new OkHttpClient();
-        OkHttpClient client = createHttpclient();
-
-        @Override
-        protected String doInBackground(String... params) {
-            String Response_body = "NA,NA,NA";
-
-//            Response response;
-            String url = params[0];
-            Request V_request = new Request.Builder()
-                    .url(url)
-                    .build();
-            try (Response response = client.newCall(V_request).execute()) {
-                if (response.isSuccessful()) {
-                    Response_body = response.body().string();
-                    response.close();
-                } else {
-                    Response_body = "NA,NA,NA";
-                    response.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return Response_body;
-        }
-    }
-
     @SuppressLint("ResourceType")
     @RequiresApi(api = Build.VERSION_CODES.Q)
     public void Table(String PanelVoltage[][], View rootView) {
@@ -240,7 +268,7 @@ public class Voltage_fragment extends Fragment {
 
                 Data_R.setLayoutParams(row_with);
                 Data_R.setBackgroundColor(Color.WHITE);
-                Data_R.setText(PanelVoltage[i][d]);
+                Data_R.setText(PanelVoltage[i][d]+"V");
                 Data_R.setTextColor(Color.BLACK);
                 Data_R.setTextSize(18);
                 Data_R.setGravity(Gravity.CENTER);

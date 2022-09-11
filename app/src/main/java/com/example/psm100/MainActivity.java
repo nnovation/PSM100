@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         Fragment R_fragment = new Report_fragment();
 
         navigationView = findViewById(R.id.navigation);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_Layout, R_fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_Layout, T_fragment).commit();
 
         navigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
